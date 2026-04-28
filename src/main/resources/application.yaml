@@ -1,3 +1,16 @@
 spring:
   application:
-    name: Backend
+    name: nuvi-backend
+
+management:
+  health:
+    redis:
+      enabled: false
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true
