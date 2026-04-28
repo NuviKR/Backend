@@ -4,8 +4,10 @@ import com.nuvi.nuvi.common.api.ApiResponse;
 import com.nuvi.nuvi.common.api.RequestMetaFactory;
 import com.nuvi.nuvi.onboarding.application.OnboardingApplicationService;
 import com.nuvi.nuvi.onboarding.controller.dto.OnboardingDtos.OnboardingCompletionResponse;
-import com.nuvi.nuvi.onboarding.controller.dto.OnboardingDtos.OnboardingProfileRequest;
+import com.nuvi.nuvi.onboarding.controller.dto.OnboardingDtos.OnboardingProfileCreateRequest;
+import com.nuvi.nuvi.onboarding.controller.dto.OnboardingDtos.OnboardingProfilePatchRequest;
 import com.nuvi.nuvi.onboarding.controller.dto.OnboardingDtos.OnboardingProfileResponse;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,7 +36,7 @@ public class OnboardingController {
 
     @PostMapping("/profile")
     public ResponseEntity<ApiResponse<OnboardingProfileResponse>> createOnboardingProfile(
-            @RequestBody OnboardingProfileRequest request
+            @Valid @RequestBody OnboardingProfileCreateRequest request
     ) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -42,7 +44,7 @@ public class OnboardingController {
     }
 
     @PatchMapping("/profile")
-    public ApiResponse<OnboardingProfileResponse> patchOnboardingProfile(@RequestBody OnboardingProfileRequest request) {
+    public ApiResponse<OnboardingProfileResponse> patchOnboardingProfile(@Valid @RequestBody OnboardingProfilePatchRequest request) {
         return ApiResponse.ok(onboardingService.patchProfile(request), metaFactory.current());
     }
 

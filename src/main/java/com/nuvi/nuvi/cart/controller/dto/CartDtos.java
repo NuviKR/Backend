@@ -1,5 +1,13 @@
 package com.nuvi.nuvi.cart.controller.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+
 import java.util.List;
 
 public final class CartDtos {
@@ -53,24 +61,39 @@ public final class CartDtos {
     }
 
     public record Money(
+            @Min(0)
+            @Max(10_000_000)
             int amount,
+            @NotBlank
+            @Pattern(regexp = "KRW")
             String currency
     ) {
     }
 
     public record WeeklyCartCreateRequest(
+            @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$")
             String weekStartDate,
+            @Valid
             Money budgetOverride
     ) {
     }
 
     public record CartItemUpdateRequest(
+            @Min(1)
+            @Max(99)
             Integer quantity,
             Boolean selected
     ) {
+        @JsonIgnore
+        @AssertTrue(message = "quantity or selected must be provided.")
+        public boolean isUpdateRequested() {
+            return quantity != null || selected != null;
+        }
     }
 
     public record CartItemReplaceRequest(
+            @NotBlank
+            @Pattern(regexp = "^prod_[A-Za-z0-9]+$")
             String replacementProductId,
             ReplaceReason reason
     ) {
