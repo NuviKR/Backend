@@ -2,15 +2,22 @@ package com.nuvi.nuvi.api;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nuvi.nuvi.auth.infra.KakaoOidcClaims;
+import com.nuvi.nuvi.auth.infra.KakaoOidcClient;
+import com.nuvi.nuvi.auth.infra.KakaoOidcClientException;
 import com.nuvi.nuvi.onboarding.controller.dto.OnboardingDtos.SupplementContextInput;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.lang.reflect.RecordComponent;
+import java.time.Instant;
 import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
+@SpringBootTest(properties = "nuvi.auth.kakao.rest-api-key=test_kakao_rest_api_key")
 @AutoConfigureMockMvc
 class ApiSkeletonEndpointTests {
 
@@ -31,7 +38,7 @@ class ApiSkeletonEndpointTests {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
-    void kakaoAuthorizeUsesApiResponseEnvelope() throws Exception {
+    void kakaoAuthorizeUsesApiResponseEnvelopeAndOpenIdScope() throws Exception {
         mockMvc.perform(get("/api/v1/auth/kakao/authorize")
                         .param("redirectUri", "http://localhost:3000/auth/callback")
                         .param("state", "state_1234567890")
@@ -39,7 +46,65 @@ class ApiSkeletonEndpointTests {
                 .andExpect(status().isOk())
                 .andExpect(header().string("X-Request-Id", "req_test_auth"))
                 .andExpect(jsonPath("$.data.authorizeUrl").exists())
+                .andExpect(jsonPath("$.data.authorizeUrl").value(org.hamcrest.Matchers.containsString("client_id=test_kakao_rest_api_key")))
+                .andExpect(jsonPath("$.data.authorizeUrl").value(org.hamcrest.Matchers.containsString("scope=openid")))
                 .andExpect(jsonPath("$.meta.requestId").value("req_test_auth"));
+    }
+
+    @Test
+    void kakaoCallbackMapsVerifiedOidcSubjectToMemberSkeleton() throws Exception {
+        mockMvc.perform(post("/api/v1/auth/kakao/callback")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "code": "valid_code_123",
+                                  "state": "state_1234567890",
+                                  "redirectUri": "http://localhost:3000/auth/callback"
+                                }
+                                """)
+                        .header("X-Request-Id", "req_test_kakao_callback"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.session.authenticated").value(true))
+                .andExpect(jsonPath("$.data.session.memberId").value(org.hamcrest.Matchers.startsWith("mem_")))
+                .andExpect(jsonPath("$.data.session.provider").value("KAKAO"))
+                .andExpect(jsonPath("$.data.session.emailAuthEnabled").value(false))
+                .andExpect(jsonPath("$.meta.requestId").value("req_test_kakao_callback"));
+    }
+
+    @Test
+    void kakaoCallbackInvalidCodeUsesStandardErrorResponse() throws Exception {
+        mockMvc.perform(post("/api/v1/auth/kakao/callback")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "code": "invalid_code",
+                                  "state": "state_1234567890",
+                                  "redirectUri": "http://localhost:3000/auth/callback"
+                                }
+                                """)
+                        .header("X-Request-Id", "req_test_kakao_invalid_code"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.error.message").value("Kakao OIDC authentication failed."))
+                .andExpect(jsonPath("$.meta.requestId").value("req_test_kakao_invalid_code"));
+    }
+
+    @Test
+    void kakaoCallbackUnverifiableIdTokenUsesStandardErrorResponse() throws Exception {
+        mockMvc.perform(post("/api/v1/auth/kakao/callback")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "code": "invalid_id_token",
+                                  "state": "state_1234567890",
+                                  "redirectUri": "http://localhost:3000/auth/callback"
+                                }
+                                """)
+                        .header("X-Request-Id", "req_test_kakao_invalid_id_token"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.error.message").value("Kakao OIDC authentication failed."))
+                .andExpect(jsonPath("$.meta.requestId").value("req_test_kakao_invalid_id_token"));
     }
 
     @Test
@@ -220,5 +285,28 @@ class ApiSkeletonEndpointTests {
                         "expertConsultationNoticeAccepted"
                 );
         assertThat(componentNames).doesNotContain("medicationName", "dosage", "dose", "schedule");
+    }
+
+    @TestConfiguration
+    static class KakaoOidcTestConfiguration {
+
+        @Bean
+        @Primary
+        KakaoOidcClient kakaoOidcClient() {
+            return (code, redirectUri) -> {
+                if ("invalid_code".equals(code)) {
+                    throw new KakaoOidcClientException("Invalid authorization code.");
+                }
+                if ("invalid_id_token".equals(code)) {
+                    throw new KakaoOidcClientException("The id_token could not be verified.");
+                }
+                return new KakaoOidcClaims(
+                        "kakao_oidc_subject_123",
+                        "https://kauth.kakao.com",
+                        "test_kakao_rest_api_key",
+                        Instant.parse("2099-01-01T00:00:00Z")
+                );
+            };
+        }
     }
 }
