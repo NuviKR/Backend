@@ -1,5 +1,9 @@
 package com.nuvi.nuvi.auth.controller.dto;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 public final class AuthDtos {
 
     private AuthDtos() {
@@ -24,8 +28,13 @@ public final class AuthDtos {
     }
 
     public record KakaoCallbackRequest(
+            @NotBlank
+            @Size(min = 8, max = 2048)
             String code,
+            @Size(min = 16, max = 256)
             String state,
+            @NotBlank
+            @Size(max = 2048)
             String redirectUri
     ) {
     }
@@ -39,7 +48,11 @@ public final class AuthDtos {
     }
 
     public record EmailLoginRequest(
+            @NotBlank
+            @Email
             String email,
+            @NotBlank
+            @Size(min = 8, max = 256)
             String password
     ) {
     }

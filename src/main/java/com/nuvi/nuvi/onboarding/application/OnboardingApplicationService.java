@@ -5,7 +5,8 @@ import com.nuvi.nuvi.onboarding.controller.dto.OnboardingDtos.FoodPreferenceInpu
 import com.nuvi.nuvi.onboarding.controller.dto.OnboardingDtos.HealthGoalCode;
 import com.nuvi.nuvi.onboarding.controller.dto.OnboardingDtos.Money;
 import com.nuvi.nuvi.onboarding.controller.dto.OnboardingDtos.OnboardingCompletionResponse;
-import com.nuvi.nuvi.onboarding.controller.dto.OnboardingDtos.OnboardingProfileRequest;
+import com.nuvi.nuvi.onboarding.controller.dto.OnboardingDtos.OnboardingProfileCreateRequest;
+import com.nuvi.nuvi.onboarding.controller.dto.OnboardingDtos.OnboardingProfilePatchRequest;
 import com.nuvi.nuvi.onboarding.controller.dto.OnboardingDtos.OnboardingProfileResponse;
 import com.nuvi.nuvi.onboarding.controller.dto.OnboardingDtos.OnboardingStatus;
 import com.nuvi.nuvi.onboarding.controller.dto.OnboardingDtos.SupplementContextInput;
@@ -21,11 +22,11 @@ public class OnboardingApplicationService {
         return skeletonProfile(OnboardingStatus.DRAFT);
     }
 
-    public OnboardingProfileResponse createProfile(OnboardingProfileRequest request) {
+    public OnboardingProfileResponse createProfile(OnboardingProfileCreateRequest request) {
         return fromRequest(request, OnboardingStatus.DRAFT);
     }
 
-    public OnboardingProfileResponse patchProfile(OnboardingProfileRequest request) {
+    public OnboardingProfileResponse patchProfile(OnboardingProfilePatchRequest request) {
         return fromRequest(request, OnboardingStatus.DRAFT);
     }
 
@@ -33,7 +34,21 @@ public class OnboardingApplicationService {
         return new OnboardingCompletionResponse(true, "GENERATE_WEEKLY_CART");
     }
 
-    private OnboardingProfileResponse fromRequest(OnboardingProfileRequest request, OnboardingStatus status) {
+    private OnboardingProfileResponse fromRequest(OnboardingProfileCreateRequest request, OnboardingStatus status) {
+        return new OnboardingProfileResponse(
+                request.ageRange(),
+                request.householdSize(),
+                request.weeklyBudget(),
+                request.goals(),
+                request.allergies(),
+                request.preferences(),
+                request.supplementContext(),
+                status,
+                Instant.now().toString()
+        );
+    }
+
+    private OnboardingProfileResponse fromRequest(OnboardingProfilePatchRequest request, OnboardingStatus status) {
         OnboardingProfileResponse fallback = skeletonProfile(status);
         return new OnboardingProfileResponse(
                 request.ageRange() == null ? fallback.ageRange() : request.ageRange(),

@@ -1,5 +1,13 @@
 package com.nuvi.nuvi.onboarding.controller.dto;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+
 import java.util.List;
 
 public final class OnboardingDtos {
@@ -45,39 +53,82 @@ public final class OnboardingDtos {
     }
 
     public record Money(
+            @Min(0)
+            @Max(10_000_000)
             int amount,
+            @NotBlank
+            @Pattern(regexp = "KRW")
             String currency
     ) {
     }
 
     public record AllergyInput(
+            @NotBlank
+            @Size(max = 64)
             String allergenCode,
+            @NotNull
             AllergySeverity severity
     ) {
     }
 
     public record FoodPreferenceInput(
+            @Size(max = 50)
             List<String> excludedIngredientCodes,
+            @Size(max = 50)
             List<String> preferredIngredientCodes,
+            @Size(max = 5)
             List<DietType> dietTypes
     ) {
     }
 
     public record SupplementContextInput(
             boolean usesSupplements,
+            @Size(max = 30)
             List<String> supplementIngredientCodes,
             boolean usesMedication,
             Boolean expertConsultationNoticeAccepted
     ) {
     }
 
-    public record OnboardingProfileRequest(
+    public record OnboardingProfileCreateRequest(
+            @NotNull
             AgeRange ageRange,
+            @NotNull
+            @Min(1)
+            @Max(8)
             Integer householdSize,
+            @NotNull
+            @Valid
             Money weeklyBudget,
+            @NotNull
+            @Size(min = 1, max = 5)
             List<HealthGoalCode> goals,
-            List<AllergyInput> allergies,
+            @NotNull
+            @Size(max = 30)
+            List<@Valid AllergyInput> allergies,
+            @NotNull
+            @Valid
             FoodPreferenceInput preferences,
+            @NotNull
+            @Valid
+            SupplementContextInput supplementContext
+    ) {
+    }
+
+    public record OnboardingProfilePatchRequest(
+            AgeRange ageRange,
+            @Min(1)
+            @Max(8)
+            Integer householdSize,
+            @Valid
+            Money weeklyBudget,
+            @Size(max = 5)
+            List<HealthGoalCode> goals,
+            @Size(max = 30)
+            List<@Valid AllergyInput> allergies,
+            @Valid
+            FoodPreferenceInput preferences,
+            @Valid
             SupplementContextInput supplementContext
     ) {
     }

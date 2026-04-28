@@ -15,6 +15,7 @@ import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -58,6 +59,19 @@ class ApiSkeletonEndpointTests {
     }
 
     @Test
+    void kakaoCallbackValidationFailureUsesErrorEnvelopeWithRequestId() throws Exception {
+        mockMvc.perform(post("/api/v1/auth/kakao/callback")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}")
+                        .header("X-Request-Id", "req_test_auth_validation"))
+                .andExpect(status().isBadRequest())
+                .andExpect(header().string("X-Request-Id", "req_test_auth_validation"))
+                .andExpect(jsonPath("$.error.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.error.details").isArray())
+                .andExpect(jsonPath("$.meta.requestId").value("req_test_auth_validation"));
+    }
+
+    @Test
     void onboardingProfileCreateUsesDataMetaEnvelope() throws Exception {
         mockMvc.perform(post("/api/v1/onboarding/profile")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -92,6 +106,45 @@ class ApiSkeletonEndpointTests {
     }
 
     @Test
+    void onboardingValidationRejectsInvalidCreateRequestWithRequestId() throws Exception {
+        mockMvc.perform(post("/api/v1/onboarding/profile")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "ageRange": "AGE_30_39",
+                                  "householdSize": 0,
+                                  "weeklyBudget": {
+                                    "amount": -1,
+                                    "currency": "USD"
+                                  },
+                                  "goals": [],
+                                  "allergies": [
+                                    {
+                                      "allergenCode": "",
+                                      "severity": null
+                                    }
+                                  ],
+                                  "preferences": {
+                                    "excludedIngredientCodes": [],
+                                    "preferredIngredientCodes": [],
+                                    "dietTypes": []
+                                  },
+                                  "supplementContext": {
+                                    "usesSupplements": false,
+                                    "supplementIngredientCodes": [],
+                                    "usesMedication": false,
+                                    "expertConsultationNoticeAccepted": false
+                                  }
+                                }
+                                """)
+                        .header("X-Request-Id", "req_test_onboarding_validation"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.error.details").isNotEmpty())
+                .andExpect(jsonPath("$.meta.requestId").value("req_test_onboarding_validation"));
+    }
+
+    @Test
     void weeklyCartCreateUsesOpenApiEnvelopeAndSafetyShape() throws Exception {
         String responseBody = mockMvc.perform(post("/api/v1/carts/weekly")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -122,6 +175,35 @@ class ApiSkeletonEndpointTests {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error.code").value("VALIDATION_FAILED"))
                 .andExpect(jsonPath("$.meta.requestId").value("req_test_missing_idem"));
+    }
+
+    @Test
+    void cartItemUpdateValidationRejectsEmptyPatchWithRequestId() throws Exception {
+        mockMvc.perform(patch("/api/v1/carts/cart_skeleton/items/citem_skeleton")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}")
+                        .header("Idempotency-Key", "idem_cart_update_123")
+                        .header("X-Request-Id", "req_test_cart_validation"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.error.details").isNotEmpty())
+                .andExpect(jsonPath("$.meta.requestId").value("req_test_cart_validation"));
+    }
+
+    @Test
+    void swaggerUiAndOpenApiDocsAreExposed() throws Exception {
+        mockMvc.perform(get("/v3/api-docs")
+                        .header("X-Request-Id", "req_test_openapi"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.openapi").exists())
+                .andExpect(jsonPath("$.paths['/api/v1/carts/weekly']").exists());
+
+        int swaggerStatus = mockMvc.perform(get("/swagger-ui.html"))
+                .andReturn()
+                .getResponse()
+                .getStatus();
+
+        assertThat(swaggerStatus).isIn(200, 302);
     }
 
     @Test
