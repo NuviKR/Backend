@@ -1,4 +1,4 @@
-package com.nuvi.nuvi.auth.infra;
+package com.nuvi.nuvi.auth.infra.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

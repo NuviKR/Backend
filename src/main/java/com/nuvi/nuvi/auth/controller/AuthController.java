@@ -6,7 +6,7 @@ import com.nuvi.nuvi.auth.controller.dto.AuthDtos.AuthTokenResponse;
 import com.nuvi.nuvi.auth.controller.dto.AuthDtos.EmailLoginRequest;
 import com.nuvi.nuvi.auth.controller.dto.AuthDtos.KakaoAuthorizeResponse;
 import com.nuvi.nuvi.auth.controller.dto.AuthDtos.KakaoCallbackRequest;
-import com.nuvi.nuvi.auth.infra.RefreshTokenProperties;
+import com.nuvi.nuvi.auth.infra.config.RefreshTokenProperties;
 import com.nuvi.nuvi.common.api.ApiErrorCode;
 import com.nuvi.nuvi.common.api.ApiException;
 import com.nuvi.nuvi.common.api.ApiResponse;

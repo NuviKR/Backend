@@ -41,7 +41,7 @@ public class CartApplicationService {
         return skeletonCart(cartId, LocalDate.now(ZoneOffset.UTC).toString());
     }
 
-    public Cart removeItem(String cartId) {
+    public Cart excludeItem(String cartId) {
         return skeletonCart(cartId, LocalDate.now(ZoneOffset.UTC).toString());
     }
 

@@ -1,4 +1,4 @@
-package com.nuvi.nuvi.auth.infra;
+package com.nuvi.nuvi.auth.infra.adapter;
 
 import java.time.Instant;
 

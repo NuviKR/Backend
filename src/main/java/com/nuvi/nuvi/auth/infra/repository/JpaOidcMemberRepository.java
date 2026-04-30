@@ -1,14 +1,16 @@
-package com.nuvi.nuvi.auth.infra;
+package com.nuvi.nuvi.auth.infra.repository;
 
-import com.nuvi.nuvi.auth.controller.dto.AuthDtos.AuthProvider;
-import com.nuvi.nuvi.auth.domain.MemberIdentity;
-import com.nuvi.nuvi.auth.domain.OidcMemberRepository;
+import com.nuvi.nuvi.auth.domain.model.AuthProvider;
+import com.nuvi.nuvi.auth.domain.model.MemberIdentity;
+import com.nuvi.nuvi.auth.domain.repository.OidcMemberRepository;
+import com.nuvi.nuvi.auth.infra.entity.AuthMemberJpaEntity;
+import com.nuvi.nuvi.auth.infra.entity.AuthProviderJpaEntity;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 @Repository
-public class JpaOidcMemberRepository implements OidcMemberRepository {
+class JpaOidcMemberRepository implements OidcMemberRepository {
 
     private final SpringDataAuthMemberRepository memberRepository;
     private final SpringDataAuthProviderRepository authProviderRepository;

@@ -15,7 +15,6 @@ import jakarta.validation.constraints.Size;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -70,13 +69,13 @@ public class CartController {
         return ApiResponse.ok(cartService.updateItem(cartId), metaFactory.current());
     }
 
-    @DeleteMapping("/{cartId}/items/{cartItemId}")
-    public ApiResponse<Cart> removeCartItem(
+    @PostMapping("/{cartId}/items/{cartItemId}/exclude")
+    public ApiResponse<Cart> excludeCartItem(
             @RequestHeader(IDEMPOTENCY_KEY) @NotBlank @Size(min = 16, max = 128) String idempotencyKey,
             @PathVariable @Pattern(regexp = "^cart_[A-Za-z0-9]+$") String cartId,
             @PathVariable @Pattern(regexp = "^citem_[A-Za-z0-9]+$") String cartItemId
     ) {
-        return ApiResponse.ok(cartService.removeItem(cartId), metaFactory.current());
+        return ApiResponse.ok(cartService.excludeItem(cartId), metaFactory.current());
     }
 
     @PostMapping("/{cartId}/items/{cartItemId}/replace")

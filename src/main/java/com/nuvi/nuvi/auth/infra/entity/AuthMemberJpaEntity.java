@@ -1,4 +1,4 @@
-package com.nuvi.nuvi.auth.infra;
+package com.nuvi.nuvi.auth.infra.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -10,7 +10,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "auth_members")
-class AuthMemberJpaEntity {
+public class AuthMemberJpaEntity {
 
     @Id
     @Column(name = "member_id", nullable = false, updatable = false, length = 40)
@@ -27,16 +27,16 @@ class AuthMemberJpaEntity {
         this.createdAt = createdAt;
     }
 
-    static AuthMemberJpaEntity create() {
+    public static AuthMemberJpaEntity create() {
         String id = "mem_" + UUID.randomUUID().toString().replace("-", "");
         return new AuthMemberJpaEntity(id, Instant.now());
     }
 
-    String memberId() {
+    public String memberId() {
         return memberId;
     }
 
-    Instant createdAt() {
+    public Instant createdAt() {
         return createdAt;
     }
 }

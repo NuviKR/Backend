@@ -1,7 +1,7 @@
 package com.nuvi.nuvi.auth;
 
-import com.nuvi.nuvi.auth.infra.KakaoOidcClaims;
-import com.nuvi.nuvi.auth.infra.KakaoOidcClient;
+import com.nuvi.nuvi.auth.infra.adapter.KakaoOidcClaims;
+import com.nuvi.nuvi.auth.infra.adapter.KakaoOidcClient;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

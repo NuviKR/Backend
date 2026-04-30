@@ -1,5 +1,6 @@
 package com.nuvi.nuvi.auth.controller.dto;
 
+import com.nuvi.nuvi.auth.domain.model.AuthProvider;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -7,10 +8,6 @@ import jakarta.validation.constraints.Size;
 public final class AuthDtos {
 
     private AuthDtos() {
-    }
-
-    public enum AuthProvider {
-        KAKAO
     }
 
     public record AuthSession(

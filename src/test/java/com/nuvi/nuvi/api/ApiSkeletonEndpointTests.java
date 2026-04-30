@@ -2,9 +2,9 @@ package com.nuvi.nuvi.api;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nuvi.nuvi.auth.infra.KakaoOidcClaims;
-import com.nuvi.nuvi.auth.infra.KakaoOidcClient;
-import com.nuvi.nuvi.auth.infra.KakaoOidcClientException;
+import com.nuvi.nuvi.auth.infra.adapter.KakaoOidcClaims;
+import com.nuvi.nuvi.auth.infra.adapter.KakaoOidcClient;
+import com.nuvi.nuvi.auth.infra.adapter.KakaoOidcClientException;
 import com.nuvi.nuvi.onboarding.controller.dto.OnboardingDtos.SupplementContextInput;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -256,12 +256,23 @@ class ApiSkeletonEndpointTests {
     }
 
     @Test
+    void cartItemExcludeUsesPostEndpointForV03SpecSync() throws Exception {
+        mockMvc.perform(post("/api/v1/carts/cart_skeleton/items/citem_skeleton/exclude")
+                        .header("Idempotency-Key", "idem_cart_exclude_123")
+                        .header("X-Request-Id", "req_test_cart_exclude"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.id").value("cart_skeleton"))
+                .andExpect(jsonPath("$.meta.requestId").value("req_test_cart_exclude"));
+    }
+
+    @Test
     void swaggerUiAndOpenApiDocsAreExposed() throws Exception {
         mockMvc.perform(get("/v3/api-docs")
                         .header("X-Request-Id", "req_test_openapi"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.openapi").exists())
-                .andExpect(jsonPath("$.paths['/api/v1/carts/weekly']").exists());
+                .andExpect(jsonPath("$.paths['/api/v1/carts/weekly']").exists())
+                .andExpect(jsonPath("$.paths['/api/v1/carts/{cartId}/items/{cartItemId}/exclude']").exists());
 
         int swaggerStatus = mockMvc.perform(get("/swagger-ui.html"))
                 .andReturn()
@@ -300,8 +311,12 @@ class ApiSkeletonEndpointTests {
                 if ("invalid_id_token".equals(code)) {
                     throw new KakaoOidcClientException("The id_token could not be verified.");
                 }
+                String subject = switch (code) {
+                    case "valid_code_new_subject" -> "kakao_oidc_subject_456";
+                    default -> "kakao_oidc_subject_123";
+                };
                 return new KakaoOidcClaims(
-                        "kakao_oidc_subject_123",
+                        subject,
                         "https://kauth.kakao.com",
                         "test_kakao_rest_api_key",
                         Instant.parse("2099-01-01T00:00:00Z")

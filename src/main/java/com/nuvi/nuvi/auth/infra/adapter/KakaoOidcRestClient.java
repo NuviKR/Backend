@@ -1,5 +1,6 @@
-package com.nuvi.nuvi.auth.infra;
+package com.nuvi.nuvi.auth.infra.adapter;
 
+import com.nuvi.nuvi.auth.infra.config.KakaoAuthProperties;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class KakaoOidcRestClient implements KakaoOidcClient {
+class KakaoOidcRestClient implements KakaoOidcClient {
 
     private static final String DEFAULT_TOKEN_URI = "https://kauth.kakao.com/oauth/token";
     private static final String DEFAULT_ISSUER = "https://kauth.kakao.com";
