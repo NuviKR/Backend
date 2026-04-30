@@ -20,3 +20,12 @@ springdoc:
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
+
+nuvi:
+  auth:
+    kakao:
+      rest-api-key: ${NUVI_KAKAO_REST_API_KEY:}
+      client-secret: ${NUVI_KAKAO_CLIENT_SECRET:}
+      token-uri: ${NUVI_KAKAO_TOKEN_URI:https://kauth.kakao.com/oauth/token}
+      issuer: ${NUVI_KAKAO_ISSUER:https://kauth.kakao.com}
+      jwks-uri: ${NUVI_KAKAO_JWKS_URI:https://kauth.kakao.com/.well-known/jwks.json}
