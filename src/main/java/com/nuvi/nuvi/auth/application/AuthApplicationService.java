@@ -11,6 +11,7 @@ import com.nuvi.nuvi.auth.infra.KakaoAuthProperties;
 import com.nuvi.nuvi.auth.infra.KakaoOidcClaims;
 import com.nuvi.nuvi.auth.infra.KakaoOidcClient;
 import com.nuvi.nuvi.auth.infra.KakaoOidcClientException;
+import com.nuvi.nuvi.auth.infra.RefreshTokenService;
 import com.nuvi.nuvi.common.api.ApiErrorCode;
 import com.nuvi.nuvi.common.api.ApiException;
 import org.springframework.http.HttpStatus;
@@ -26,15 +27,18 @@ public class AuthApplicationService {
     private final KakaoAuthProperties kakaoProperties;
     private final KakaoOidcClient kakaoOidcClient;
     private final OidcMemberRepository memberRepository;
+    private final RefreshTokenService refreshTokenService;
 
     public AuthApplicationService(
             KakaoAuthProperties kakaoProperties,
             KakaoOidcClient kakaoOidcClient,
-            OidcMemberRepository memberRepository
+            OidcMemberRepository memberRepository,
+            RefreshTokenService refreshTokenService
     ) {
         this.kakaoProperties = kakaoProperties;
         this.kakaoOidcClient = kakaoOidcClient;
         this.memberRepository = memberRepository;
+        this.refreshTokenService = refreshTokenService;
     }
 
     public AuthSession currentSession() {
@@ -59,7 +63,7 @@ public class AuthApplicationService {
         return new KakaoAuthorizeResponse(authorizeUrl);
     }
 
-    public AuthTokenResponse completeKakaoLogin(KakaoCallbackRequest request) {
+    public AuthTokenIssue completeKakaoLogin(KakaoCallbackRequest request) {
         KakaoOidcClaims claims;
         try {
             claims = kakaoOidcClient.exchangeCodeAndVerifyIdToken(request.code(), request.redirectUri());
@@ -67,12 +71,21 @@ public class AuthApplicationService {
             throw new ApiException(HttpStatus.BAD_REQUEST, ApiErrorCode.VALIDATION_FAILED, "Kakao OIDC authentication failed.");
         }
         MemberIdentity member = memberRepository.findOrCreate(AuthProvider.KAKAO, claims.subject());
+        RefreshTokenService.IssuedRefreshToken refreshToken = refreshTokenService.issue(member.memberId());
         AuthSession session = new AuthSession(true, member.memberId(), AuthProvider.KAKAO, false, false);
-        return new AuthTokenResponse("access_skeleton", null, 3600, session);
+        return new AuthTokenIssue(new AuthTokenResponse("access_skeleton", null, 3600, session), refreshToken.token());
     }
 
-    public AuthTokenResponse refreshToken() {
-        AuthSession session = new AuthSession(true, "mem_skeleton", AuthProvider.KAKAO, false, false);
-        return new AuthTokenResponse("access_skeleton_refreshed", null, 3600, session);
+    public AuthTokenIssue refreshToken(String refreshToken) {
+        RefreshTokenService.IssuedRefreshToken rotated = refreshTokenService.rotate(refreshToken);
+        AuthSession session = new AuthSession(true, rotated.memberId(), AuthProvider.KAKAO, false, false);
+        return new AuthTokenIssue(new AuthTokenResponse("access_skeleton_refreshed", null, 3600, session), rotated.token());
+    }
+
+    public void logout(String refreshToken) {
+        refreshTokenService.revoke(refreshToken);
+    }
+
+    public record AuthTokenIssue(AuthTokenResponse response, String refreshToken) {
     }
 }
