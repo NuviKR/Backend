@@ -52,7 +52,7 @@ public class AuthController {
 
     @PostMapping("/kakao/callback")
     public ApiResponse<AuthTokenResponse> completeKakaoLogin(@Valid @RequestBody KakaoCallbackRequest request) {
-        return ApiResponse.ok(authService.completeKakaoLogin(), metaFactory.current());
+        return ApiResponse.ok(authService.completeKakaoLogin(request), metaFactory.current());
     }
 
     @PostMapping("/email/login")
