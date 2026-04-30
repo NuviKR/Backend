@@ -2,6 +2,8 @@ package com.nuvi.nuvi.api;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nuvi.nuvi.auth.domain.model.AuthProvider;
+import com.nuvi.nuvi.auth.domain.repository.OidcMemberRepository;
 import com.nuvi.nuvi.auth.infra.adapter.KakaoOidcClaims;
 import com.nuvi.nuvi.auth.infra.adapter.KakaoOidcClient;
 import com.nuvi.nuvi.auth.infra.adapter.KakaoOidcClientException;
@@ -34,6 +36,9 @@ class ApiSkeletonEndpointTests {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private OidcMemberRepository oidcMemberRepository;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -138,6 +143,8 @@ class ApiSkeletonEndpointTests {
 
     @Test
     void onboardingProfileCreateUsesDataMetaEnvelope() throws Exception {
+        String memberId = oidcMemberRepository.findOrCreate(AuthProvider.KAKAO, "kakao_onboarding_skeleton").memberId();
+
         mockMvc.perform(post("/api/v1/onboarding/profile")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -163,6 +170,7 @@ class ApiSkeletonEndpointTests {
                                   }
                                 }
                                 """)
+                        .header("X-Nuvi-Member-Id", memberId)
                         .header("X-Request-Id", "req_test_onboarding"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.status").value("DRAFT"))
