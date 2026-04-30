@@ -1,4 +1,4 @@
-package com.nuvi.nuvi.auth.infra;
+package com.nuvi.nuvi.auth.infra.adapter;
 
 public class KakaoOidcClientException extends RuntimeException {
 

@@ -1,7 +1,7 @@
-package com.nuvi.nuvi.auth.infra;
+package com.nuvi.nuvi.auth.infra.repository;
 
-import com.nuvi.nuvi.auth.controller.dto.AuthDtos.AuthProvider;
-import com.nuvi.nuvi.auth.domain.OidcMemberRepository;
+import com.nuvi.nuvi.auth.domain.model.AuthProvider;
+import com.nuvi.nuvi.auth.domain.repository.OidcMemberRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

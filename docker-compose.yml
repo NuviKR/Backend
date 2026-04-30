@@ -1,0 +1,26 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: nuvi-backend-mysql
+    restart: unless-stopped
+    ports:
+      - "${NUVI_MYSQL_PORT:-3306}:3306"
+    environment:
+      MYSQL_DATABASE: ${NUVI_MYSQL_DATABASE:-nuvi}
+      MYSQL_USER: ${NUVI_MYSQL_USER:-nuvi}
+      MYSQL_PASSWORD: ${NUVI_MYSQL_PASSWORD:-nuvi_local_password}
+      MYSQL_ROOT_PASSWORD: ${NUVI_MYSQL_ROOT_PASSWORD:-nuvi_root_password}
+      TZ: Asia/Seoul
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u$${MYSQL_USER} -p$${MYSQL_PASSWORD} --silent"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    volumes:
+      - nuvi_mysql_data:/var/lib/mysql
+
+volumes:
+  nuvi_mysql_data:

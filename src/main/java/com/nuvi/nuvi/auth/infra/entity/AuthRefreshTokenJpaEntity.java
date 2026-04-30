@@ -1,4 +1,4 @@
-package com.nuvi.nuvi.auth.infra;
+package com.nuvi.nuvi.auth.infra.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -18,7 +18,7 @@ import java.time.Instant;
                 columnNames = "token_hash"
         )
 )
-class AuthRefreshTokenJpaEntity {
+public class AuthRefreshTokenJpaEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -50,23 +50,23 @@ class AuthRefreshTokenJpaEntity {
         this.expiresAt = expiresAt;
     }
 
-    static AuthRefreshTokenJpaEntity issue(String memberId, String tokenHash, Instant createdAt, Instant expiresAt) {
+    public static AuthRefreshTokenJpaEntity issue(String memberId, String tokenHash, Instant createdAt, Instant expiresAt) {
         return new AuthRefreshTokenJpaEntity(memberId, tokenHash, createdAt, expiresAt);
     }
 
-    String memberId() {
+    public String memberId() {
         return memberId;
     }
 
-    String tokenHash() {
+    public String tokenHash() {
         return tokenHash;
     }
 
-    boolean isUsableAt(Instant now) {
+    public boolean isUsableAt(Instant now) {
         return revokedAt == null && expiresAt.isAfter(now);
     }
 
-    void revoke(Instant revokedAt) {
+    public void revoke(Instant revokedAt) {
         if (this.revokedAt == null) {
             this.revokedAt = revokedAt;
         }

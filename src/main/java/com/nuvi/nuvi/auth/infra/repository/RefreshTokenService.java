@@ -1,5 +1,7 @@
-package com.nuvi.nuvi.auth.infra;
+package com.nuvi.nuvi.auth.infra.repository;
 
+import com.nuvi.nuvi.auth.infra.config.RefreshTokenProperties;
+import com.nuvi.nuvi.auth.infra.entity.AuthRefreshTokenJpaEntity;
 import com.nuvi.nuvi.common.api.ApiErrorCode;
 import com.nuvi.nuvi.common.api.ApiException;
 import org.springframework.http.HttpStatus;

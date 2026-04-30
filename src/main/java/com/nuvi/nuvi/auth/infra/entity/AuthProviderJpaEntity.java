@@ -1,6 +1,6 @@
-package com.nuvi.nuvi.auth.infra;
+package com.nuvi.nuvi.auth.infra.entity;
 
-import com.nuvi.nuvi.auth.controller.dto.AuthDtos.AuthProvider;
+import com.nuvi.nuvi.auth.domain.model.AuthProvider;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -24,7 +24,7 @@ import java.time.Instant;
                 columnNames = {"provider", "provider_subject"}
         )
 )
-class AuthProviderJpaEntity {
+public class AuthProviderJpaEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -60,27 +60,27 @@ class AuthProviderJpaEntity {
         this.createdAt = createdAt;
     }
 
-    static AuthProviderJpaEntity create(AuthMemberJpaEntity member, AuthProvider provider, String providerSubject) {
+    public static AuthProviderJpaEntity create(AuthMemberJpaEntity member, AuthProvider provider, String providerSubject) {
         return new AuthProviderJpaEntity(member, provider, providerSubject, Instant.now());
     }
 
-    Long id() {
+    public Long id() {
         return id;
     }
 
-    AuthMemberJpaEntity member() {
+    public AuthMemberJpaEntity member() {
         return member;
     }
 
-    AuthProvider provider() {
+    public AuthProvider provider() {
         return provider;
     }
 
-    String providerSubject() {
+    public String providerSubject() {
         return providerSubject;
     }
 
-    Instant createdAt() {
+    public Instant createdAt() {
         return createdAt;
     }
 }

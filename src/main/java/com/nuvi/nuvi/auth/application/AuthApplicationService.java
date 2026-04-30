@@ -1,17 +1,17 @@
 package com.nuvi.nuvi.auth.application;
 
-import com.nuvi.nuvi.auth.controller.dto.AuthDtos.AuthProvider;
 import com.nuvi.nuvi.auth.controller.dto.AuthDtos.AuthSession;
 import com.nuvi.nuvi.auth.controller.dto.AuthDtos.AuthTokenResponse;
 import com.nuvi.nuvi.auth.controller.dto.AuthDtos.KakaoAuthorizeResponse;
 import com.nuvi.nuvi.auth.controller.dto.AuthDtos.KakaoCallbackRequest;
-import com.nuvi.nuvi.auth.domain.MemberIdentity;
-import com.nuvi.nuvi.auth.domain.OidcMemberRepository;
-import com.nuvi.nuvi.auth.infra.KakaoAuthProperties;
-import com.nuvi.nuvi.auth.infra.KakaoOidcClaims;
-import com.nuvi.nuvi.auth.infra.KakaoOidcClient;
-import com.nuvi.nuvi.auth.infra.KakaoOidcClientException;
-import com.nuvi.nuvi.auth.infra.RefreshTokenService;
+import com.nuvi.nuvi.auth.domain.model.AuthProvider;
+import com.nuvi.nuvi.auth.domain.model.MemberIdentity;
+import com.nuvi.nuvi.auth.domain.repository.OidcMemberRepository;
+import com.nuvi.nuvi.auth.infra.adapter.KakaoOidcClaims;
+import com.nuvi.nuvi.auth.infra.adapter.KakaoOidcClient;
+import com.nuvi.nuvi.auth.infra.adapter.KakaoOidcClientException;
+import com.nuvi.nuvi.auth.infra.config.KakaoAuthProperties;
+import com.nuvi.nuvi.auth.infra.repository.RefreshTokenService;
 import com.nuvi.nuvi.common.api.ApiErrorCode;
 import com.nuvi.nuvi.common.api.ApiException;
 import org.springframework.http.HttpStatus;
